@@ -8,7 +8,7 @@
 ![MR5 연결 후 스킨](./readme_assets/Skin_image2.png)<br/>
 스킨 이미지(좌: MR5 연결 전 스킨, 우: MR5 연결 후 스킨)
 
-![OSD_Overlay](./readme_assets/OSD_Overlay.png)<br/>
+![OSD_Overlay](./readme_assets/OSD_image.png)<br/>
 OSD Overlay UI 디자인
 ## ✨ 주요 기능 (Features)
 * **실시간 OSD 오버레이:** 볼륨 조절 시 윈도우 중앙 하단에 부드럽고 투명한 커스텀 OSD 창이 즉각적으로 나타났다 사라집니다.
