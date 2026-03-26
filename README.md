@@ -37,18 +37,31 @@ pip install bleak
 
 ### 2. MAC 주소 및 UUID 찾기
 에디파이어 MR5의 BLE(Bluetooth Low Energy) 통신용 MAC 주소와 볼륨 Notify UUID를 알아야 합니다.
-(안드로이드 스마트폰 기준)
-1. 스마트폰에 nRF Connect for Mobile![nRF Connect for Mobile](./readme_assets/nRF_Connect.png) 앱을 설치하고 기기를 스캔합니다.
 
-![nRF Connect for Mobile](./readme_assets/how_to1.png)
+(안드로이드 스마트폰 기준)
+
+&nbsp;&nbsp;&nbsp;&nbsp;<img src="./readme_assets/nRF_Connect.png" width="48px"/><br />
+
+1. 스마트폰에 nRF Connect for Mobile 앱을 설치하고 기기를 스캔합니다.
+
+
+&nbsp;&nbsp;&nbsp;&nbsp;<img src="./readme_assets/how_to1.png" width="400px"/><br />
+ 
 2. `EDIFIER BLE` 라는 이름을 갖는 장치를 찾아서 CONNECT 버튼을 누릅니다. 이때 장치 이름 바로 아래에 보이는 16진수가 `MAC 주소`입니다.
 
-![nRF Connect for Mobile](./readme_assets/how_to2.png)
-3. 그럼 위 이미지와 같은 화면으로 전환이 됩니다. 여기서 `Unknown Service` 항목을 누르면 이미지 처럼 `Unknown Characteristic` 라는 세부 항목이 출력됩니다.
-4. 저 항목 중 ![nRF Connect for Mobile](./readme_assets/how_to2-1.png) 아이콘이 있는 버튼을 누른 후 MR5 장치의 노브를 돌려봅니다.
+&nbsp;&nbsp;&nbsp;&nbsp;<img src="./readme_assets/how_to2.png" width="400px"/><br />
 
-![nRF Connect for Mobile](./readme_assets/how_to3.png)
+3. 그럼 위 이미지와 같은 화면으로 전환이 됩니다. 여기서 `Unknown Service` 항목을 누르면 이미지 처럼 `Unknown Characteristic` 라는 세부 항목이 출력됩니다.
+
+&nbsp;&nbsp;&nbsp;&nbsp;<img src="./readme_assets/how_to2-1.png" width="48px"/><br />
+
+4. 저 항목 중 사진과 같은 아이콘 버튼을 누른 후 MR5 장치의 노브를 돌려봅니다.
+
+&nbsp;&nbsp;&nbsp;&nbsp;<img src="./readme_assets/how_to3.png" width="400px"/><br />
+
 5. 해당 항목의 `Value:`부분 값이 변경되면 볼륨을 확인할 수 있는 `Notify UUID`입니다.
+
+<br />
 
 ### 3. 레인미터 스킨 설치
 1. [Rainmeter](https://www.rainmeter.net/) 최신 버전으로 설치합니다.
