@@ -4,12 +4,15 @@
 
 스마트폰 전용 앱을 켜지 않아도 PC 화면에서 스피커의 현재 볼륨과 연결 상태를 직관적으로 확인할 수 있습니다!
 
-![MR5 연결 전 스킨](./readme_assets/Skin_image1.png)
-![MR5 연결 후 스킨](./readme_assets/Skin_image2.png)<br/>
+<div align="center">
+<img src="./readme_assets/Skin_image1.png" />&nbsp;&nbsp;&nbsp;
+<img src="./readme_assets/Skin_image2.png" /><br/>
 스킨 이미지(좌: MR5 연결 전 스킨, 우: MR5 연결 후 스킨)
-
-![OSD_Overlay](./readme_assets/OSD_image.png)<br/>
+<br/><br/>
+<img src="./readme_assets/OSD_image.png" /><br/>
 OSD Overlay UI 디자인
+</div>
+
 ## ✨ 주요 기능 (Features)
 * **실시간 OSD 오버레이:** 볼륨 조절 시 윈도우 중앙 하단에 부드럽고 투명한 커스텀 OSD 창이 즉각적으로 나타났다 사라집니다.
 * **레인미터(Rainmeter) 연동:** 바탕화면의 레인미터 스킨에 현재 볼륨과 블루투스 연결 상태, 에러 메시지 등이 실시간으로 동기화됩니다.
