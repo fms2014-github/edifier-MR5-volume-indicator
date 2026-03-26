@@ -5,48 +5,22 @@ import tkinter as tk
 from bleak import BleakClient
 import os
 import json
+import configparser
 
 # ==========================================
-# 사용자 설정 값
+# 파일 경로 설정
 # ==========================================
-DEVICE_MAC_ADDRESS = "C8:24:70:45:6E:3C"  # MR5의 블루투스 MAC 주소
-VOLUME_CHARACTERISTIC_UUID = "48090001-1a48-11e9-ab14-d663bd873d93"  # 볼륨 데이터가 들어오는 UUID
-RAINMETER_CONFIG = "EdifierMR5"
-
-# 파일 경로 설정 (킬 스위치 및 설정 저장 파일)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 KILL_SWITCH_FILE = os.path.join(BASE_DIR, "stop.txt")
-SETTINGS_FILE = os.path.join(BASE_DIR, "settings.json")  # 💡 설정 파일 경로 추가
+SETTINGS_FILE = os.path.join(BASE_DIR, "settings.json")
+CONFIG_FILE = os.path.join(BASE_DIR, "config.ini")
 
+RAINMETER_CONFIG = "EdifierMR5"
 osd_app = None
 
 
 # ==========================================
-# 1. 데이터 저장 및 불러오기 함수 (새로 추가됨)
-# ==========================================
-def save_last_volume(volume_text):
-    """볼륨 값을 settings.json 파일에 저장합니다."""
-    try:
-        with open(SETTINGS_FILE, "w", encoding="utf-8") as f:
-            json.dump({"last_volume": volume_text}, f)
-    except Exception as e:
-        print(f"저장 오류: {e}")
-
-
-def load_last_volume():
-    """settings.json 파일에서 마지막 볼륨 값을 불러옵니다."""
-    if os.path.exists(SETTINGS_FILE):
-        try:
-            with open(SETTINGS_FILE, "r", encoding="utf-8") as f:
-                data = json.load(f)
-                return data.get("last_volume", "--")
-        except Exception:
-            return "--"
-    return "--"
-
-
-# ==========================================
-# 2. 레인미터 통신 및 OSD 클래스
+# 레인미터 통신 및 설정 읽기
 # ==========================================
 def send_to_rainmeter(variable_name, value):
     try:
@@ -59,6 +33,49 @@ def send_to_rainmeter(variable_name, value):
         pass
 
 
+def get_config():
+    """INI 파일을 읽고, 문제가 있으면 구체적인 에러 메시지를 반환합니다."""
+    config = configparser.ConfigParser()
+
+    if not os.path.exists(CONFIG_FILE):
+        return None, None, "오류: config.ini 파일이 없습니다"
+
+    config.read(CONFIG_FILE, encoding='utf-8')
+    try:
+        mac = config['Device']['MAC_ADDRESS']
+        uuid = config['Device']['VOLUME_UUID']
+
+        if not mac or not uuid or mac == "XX:XX:XX:XX:XX:XX":
+            return None, None, "오류: MAC 주소나 UUID가 비어있습니다"
+        return mac, uuid, None
+    except KeyError:
+        return None, None, "오류: config.ini 양식이 잘못되었습니다"
+
+
+# ==========================================
+# 데이터 저장 및 불러오기
+# ==========================================
+def save_last_volume(volume_text):
+    try:
+        with open(SETTINGS_FILE, "w", encoding="utf-8") as f:
+            json.dump({"last_volume": volume_text}, f)
+    except Exception:
+        pass
+
+
+def load_last_volume():
+    if os.path.exists(SETTINGS_FILE):
+        try:
+            with open(SETTINGS_FILE, "r", encoding="utf-8") as f:
+                return json.load(f).get("last_volume", "--")
+        except Exception:
+            return "--"
+    return "--"
+
+
+# ==========================================
+# OSD 클래스 및 블루투스 핸들러
+# ==========================================
 class VolumeOSD:
     def __init__(self):
         self.root = tk.Tk()
@@ -97,9 +114,6 @@ class VolumeOSD:
         self.root.mainloop()
 
 
-# ==========================================
-# 3. 블루투스 데이터 처리 및 백그라운드 작업
-# ==========================================
 def volume_notification_handler(sender, data):
     decimal_values = list(data)
     try:
@@ -107,10 +121,7 @@ def volume_notification_handler(sender, data):
             volume_level = decimal_values[6]
             if 0 <= volume_level <= 30:
                 display_text = "MAX" if volume_level == 30 else str(volume_level)
-
-                # 💡 볼륨이 변경될 때마다 파일에 저장합니다.
                 save_last_volume(display_text)
-
                 if osd_app:
                     osd_app.root.after(0, osd_app.update_volume, display_text)
                 send_to_rainmeter("MR5Volume", display_text)
@@ -118,21 +129,37 @@ def volume_notification_handler(sender, data):
         pass
 
 
+# ==========================================
+# 핵심 실행 로직 (에러 핸들링 포함)
+# ==========================================
 async def ble_task():
-    # 💡 프로그램이 시작될 때 저장된 마지막 볼륨을 불러와서 레인미터에 바로 띄워줍니다.
-    last_vol = load_last_volume()
-    send_to_rainmeter("MR5Volume", last_vol)
 
+    # 1. config.ini 설정 검사 (문제가 있으면 스킨에 에러 띄우고 종료)
+    mac, uuid, error_msg = get_config()
+    if error_msg:
+        send_to_rainmeter("MR5Status", error_msg)
+        os._exit(0)
+        return
+
+    # 2. 이전 볼륨 불러오기
+    send_to_rainmeter("MR5Volume", load_last_volume())
+
+    # 3. 블루투스 연결 시도
     send_to_rainmeter("MR5Status", "연결 시도 중...")
     try:
-        async with BleakClient(DEVICE_MAC_ADDRESS) as client:
+        async with BleakClient(mac) as client:
             send_to_rainmeter("MR5Status", "연결됨")
-            await client.start_notify(VOLUME_CHARACTERISTIC_UUID, volume_notification_handler)
+            await client.start_notify(uuid, volume_notification_handler)
             while True:
                 await asyncio.sleep(1)
-    except Exception:
-        send_to_rainmeter("MR5Status", "연결 끊김 / 대기 중")
-
+    except Exception as e:
+        # 블루투스 오류 시 세부 원인을 분석하여 스킨에 표시
+        error_str = str(e).lower()
+        if "was not found" in error_str or "device not found" in error_str:
+            send_to_rainmeter("MR5Status", "오류: 기기를 찾을 수 없음 (전원/페어링 확인)")
+        else:
+            send_to_rainmeter("MR5Status", "오류: 연결 끊김 / 실패")
+        os._exit(0)
 
 def start_ble_loop():
     loop = asyncio.new_event_loop()
@@ -140,9 +167,6 @@ def start_ble_loop():
     loop.run_until_complete(ble_task())
 
 
-# ==========================================
-# 4. 메인 실행부
-# ==========================================
 if __name__ == "__main__":
     if os.path.exists(KILL_SWITCH_FILE):
         try:
