@@ -116,8 +116,16 @@ class VolumeOSD:
 
 def volume_notification_handler(sender, data):
     decimal_values = list(data)
+
+    # print(data)
+    # hex_values = [hex(b) for b in data]
+
+    # print("-" * 30)
+    # print(f"전체 데이터(10진수): {decimal_values}")
+    # print(f"전체 데이터(16진수): {hex_values}")
+
     try:
-        if len(decimal_values) >= 7 and decimal_values[0] == 187:
+        if len(decimal_values) >= 7 and decimal_values[2] == 102:
             volume_level = decimal_values[6]
             if 0 <= volume_level <= 30:
                 display_text = "MAX" if volume_level == 30 else str(volume_level)
