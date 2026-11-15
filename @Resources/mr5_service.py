@@ -6,6 +6,7 @@ from bleak import BleakClient
 import os
 import json
 import configparser
+import logging
 
 # ==========================================
 # 파일 경로 설정
@@ -16,6 +17,7 @@ SETTINGS_FILE = os.path.join(BASE_DIR, "settings.json")
 CONFIG_FILE = os.path.join(BASE_DIR, "config.ini")
 
 RAINMETER_CONFIG = "EdifierMR5"
+RAINMETER_EXE = r"C:\Program Files\Rainmeter\Rainmeter.exe"
 osd_app = None
 
 
@@ -25,12 +27,12 @@ osd_app = None
 def send_to_rainmeter(variable_name, value):
     try:
         CREATE_NO_WINDOW = 0x08000000
-        subprocess.run(["C:\\Program Files\\Rainmeter\\Rainmeter.exe", "!SetVariable", variable_name, str(value),
-                        RAINMETER_CONFIG], creationflags=CREATE_NO_WINDOW)
-        subprocess.run(["C:\\Program Files\\Rainmeter\\Rainmeter.exe", "!Update", RAINMETER_CONFIG],
-                       creationflags=CREATE_NO_WINDOW)
+        subprocess.run([RAINMETER_EXE, "!SetVariable", variable_name, str(value),
+                        RAINMETER_CONFIG], creationflags=CREATE_NO_WINDOW, check=True)
+        subprocess.run([RAINMETER_EXE, "!Update", RAINMETER_CONFIG],
+                       creationflags=CREATE_NO_WINDOW, check=True)
     except Exception:
-        pass
+        logging.exception("Rainmeter update (%s)", variable_name)
 
 
 def get_config():
@@ -60,7 +62,7 @@ def save_last_volume(volume_text):
         with open(SETTINGS_FILE, "w", encoding="utf-8") as f:
             json.dump({"last_volume": volume_text}, f)
     except Exception:
-        pass
+        logging.exception("Save last volume (%s)", SETTINGS_FILE)
 
 
 def load_last_volume():
@@ -69,6 +71,7 @@ def load_last_volume():
             with open(SETTINGS_FILE, "r", encoding="utf-8") as f:
                 return json.load(f).get("last_volume", "--")
         except Exception:
+            logging.exception("Read last volume (%s)", SETTINGS_FILE)
             return "--"
     return "--"
 
@@ -79,6 +82,7 @@ def load_last_volume():
 class VolumeOSD:
     def __init__(self):
         self.root = tk.Tk()
+        self.root.report_callback_exception = self.report_callback_exception
         self.root.overrideredirect(True)
         self.root.attributes("-topmost", True)
         self.root.attributes("-alpha", 0.85)
@@ -96,6 +100,10 @@ class VolumeOSD:
         self.hide_timer = None
         self.root.withdraw()
         self.check_kill_switch()
+
+    @staticmethod
+    def report_callback_exception(exc_type, exc, tb):
+        logging.error("OSD callback", exc_info=(exc_type, exc, tb))
 
     def check_kill_switch(self):
         if os.path.exists(KILL_SWITCH_FILE):
@@ -134,7 +142,7 @@ def volume_notification_handler(sender, data):
                     osd_app.root.after(0, osd_app.update_volume, display_text)
                 send_to_rainmeter("MR5Volume", display_text)
     except Exception:
-        pass
+        logging.exception("Volume notification")
 
 
 # ==========================================
@@ -145,6 +153,7 @@ async def ble_task():
     # 1. config.ini 설정 검사 (문제가 있으면 스킨에 에러 띄우고 종료)
     mac, uuid, error_msg = get_config()
     if error_msg:
+        logging.error("%s (%s)", error_msg, CONFIG_FILE)
         send_to_rainmeter("MR5Status", error_msg)
         os._exit(0)
         return
@@ -161,6 +170,7 @@ async def ble_task():
             while True:
                 await asyncio.sleep(1)
     except Exception as e:
+        logging.exception("Bluetooth connection or volume notifications")
         # 블루투스 오류 시 세부 원인을 분석하여 스킨에 표시
         error_str = str(e).lower()
         if "was not found" in error_str or "device not found" in error_str:
@@ -175,15 +185,21 @@ def start_ble_loop():
     loop.run_until_complete(ble_task())
 
 
-if __name__ == "__main__":
+def main(executable=RAINMETER_EXE):
+    global RAINMETER_EXE, osd_app
+    RAINMETER_EXE = executable
     if os.path.exists(KILL_SWITCH_FILE):
         try:
             os.remove(KILL_SWITCH_FILE)
         except Exception:
-            pass
+            logging.exception("Clear disconnect request (%s)", KILL_SWITCH_FILE)
 
     ble_thread = threading.Thread(target=start_ble_loop, daemon=True)
     ble_thread.start()
 
     osd_app = VolumeOSD()
     osd_app.run()
+
+
+if __name__ == "__main__":
+    main()
