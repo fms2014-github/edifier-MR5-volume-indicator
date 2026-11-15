@@ -37,18 +37,31 @@ pip install bleak
 
 ### 2. MAC 주소 및 UUID 찾기
 에디파이어 MR5의 BLE(Bluetooth Low Energy) 통신용 MAC 주소와 볼륨 Notify UUID를 알아야 합니다.
-(안드로이드 스마트폰 기준)
-1. 스마트폰에 nRF Connect for Mobile![nRF Connect for Mobile](./readme_assets/nRF_Connect.png) 앱을 설치하고 기기를 스캔합니다.
 
-![nRF Connect for Mobile](./readme_assets/how_to1.png)
+(안드로이드 스마트폰 기준)
+
+&nbsp;&nbsp;&nbsp;&nbsp;<img src="./readme_assets/nRF_Connect.png" width="48px"/><br />
+
+1. 스마트폰에 nRF Connect for Mobile 앱을 설치하고 기기를 스캔합니다.
+
+
+&nbsp;&nbsp;&nbsp;&nbsp;<img src="./readme_assets/how_to1.png" width="400px"/><br />
+ 
 2. `EDIFIER BLE` 라는 이름을 갖는 장치를 찾아서 CONNECT 버튼을 누릅니다. 이때 장치 이름 바로 아래에 보이는 16진수가 `MAC 주소`입니다.
 
-![nRF Connect for Mobile](./readme_assets/how_to2.png)
-3. 그럼 위 이미지와 같은 화면으로 전환이 됩니다. 여기서 `Unknown Service` 항목을 누르면 이미지 처럼 `Unknown Characteristic` 라는 세부 항목이 출력됩니다.
-4. 저 항목 중 ![nRF Connect for Mobile](./readme_assets/how_to2-1.png) 아이콘이 있는 버튼을 누른 후 MR5 장치의 노브를 돌려봅니다.
+&nbsp;&nbsp;&nbsp;&nbsp;<img src="./readme_assets/how_to2.png" width="400px"/><br />
 
-![nRF Connect for Mobile](./readme_assets/how_to3.png)
+3. 그럼 위 이미지와 같은 화면으로 전환이 됩니다. 여기서 `Unknown Service` 항목을 누르면 이미지 처럼 `Unknown Characteristic` 라는 세부 항목이 출력됩니다.
+
+&nbsp;&nbsp;&nbsp;&nbsp;<img src="./readme_assets/how_to2-1.png" width="48px"/><br />
+
+4. 저 항목 중 사진과 같은 아이콘 버튼을 누른 후 MR5 장치의 노브를 돌려봅니다.
+
+&nbsp;&nbsp;&nbsp;&nbsp;<img src="./readme_assets/how_to3.png" width="400px"/><br />
+
 5. 해당 항목의 `Value:`부분 값이 변경되면 볼륨을 확인할 수 있는 `Notify UUID`입니다.
+
+<br />
 
 ### 3. 레인미터 스킨 설치
 1. [Rainmeter](https://www.rainmeter.net/) 최신 버전으로 설치합니다.
@@ -77,13 +90,19 @@ VOLUME_UUID = 0000xxxx-0000-1000-8000-00805f9b34fb # 본인의 볼륨 UUID로 �
 5. 사용을 중지하려면 **[ 해제 ]** 버튼을 누르면 완벽하게 종료됩니다.
 
 ### 🚨 문제 해결 (Troubleshooting)
-* 오류: config.ini 파일이 없습니다 / 양식이 잘못되었습니다: @Resources 폴더 안에 config.ini 파일이 올바르게 존재하는지, 주소 형식이 맞는지 확인하세요.
+* `오류: config.ini 파일이 없습니다` / 양식이 잘못되었습니다: @Resources 폴더 안에 config.ini 파일이 올바르게 존재하는지, 주소 형식이 맞는지 확인하세요.
 
-* 오류: 기기를 찾을 수 없음: 스피커의 전원이 켜져 있는지, PC와 너무 멀리 떨어져 있지 않은지 확인하세요.
+* `오류: 기기를 찾을 수 없습니다`는 다음 경우 중 하나 입니다.
+   *  스피커의 전원이 OFF상태
+   *  스피커와 PC의 블루투스 안테나와 거리가 너무 멂
+   *  스피커가 스마트폰이나 PC 중 하나와 블루투스 페어링이 이루어져 있지 않는 상태
 
 * 볼륨이 튀거나 이상한 값이 나옴: 코드는 데이터 패킷의 세 번째 바이트가 `102(0x66)`인 경우만 볼륨으로 인식하도록 필터링되어 있습니다. 펌웨어 버전에 따라 패킷 구조가 다를 수 있으니 파이썬 코드의 volume_notification_handler 부분을 디버깅해 보세요.
 
 * `@Resources`폴더에 stop.txt가 생기는건 정상입니다. 스킨의 `[ 해제 ]`를 눌렀을 때 해당 파일을 인식해서 `python.exe` 프로세스를 강제 종료가 되도록 하고 있습니다.<br/>
 만약 `[ 해제 ]`버튼을 누른 뒤 다시 연결을 했을 때 정상적으로 처리가 안된다면 작업관리자의 `자세히`탭에서 `python.exe`를 찾아 강제종료 시켜주시면 됩니다.
+
+* 해당 스킨을 사용해 블루투스 BLE와 연결하면 스마트폰의 `Edifier ConneX`앱과 연결이 안될 수 있습니다. 앱으로 스피커 설정이 필요할 경우 `[ 해제 ]`버튼을 누르시거나 활성화 되어 있는 python.exe 프로세스를 찾아 강제 종료 시켜주시면 됩니다.
+
 ### 📝 라이선스
 MIT License
