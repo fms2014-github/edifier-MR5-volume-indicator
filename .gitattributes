@@ -1,0 +1,2 @@
+# Preserve the packaged service exactly across Git checkouts.
+@Resources/MR5Service/** -text

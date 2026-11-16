@@ -7,11 +7,17 @@ import os
 import json
 import configparser
 import logging
+import sys
+from pathlib import Path
 
 # ==========================================
 # 파일 경로 설정
 # ==========================================
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+# The packaged executable lives in @Resources/MR5Service; settings stay in @Resources.
+BASE_DIR = (
+    Path(sys.executable).parent.parent if getattr(sys, "frozen", False)
+    else Path(__file__).resolve().parent.parent / "@Resources"
+)
 KILL_SWITCH_FILE = os.path.join(BASE_DIR, "stop.txt")
 SETTINGS_FILE = os.path.join(BASE_DIR, "settings.json")
 CONFIG_FILE = os.path.join(BASE_DIR, "config.ini")
@@ -94,7 +100,7 @@ class VolumeOSD:
         y_pos = self.root.winfo_screenheight() - 150
         self.root.geometry(f"{window_width}x{window_height}+{x_pos}+{y_pos}")
 
-        self.label = tk.Label(self.root, text="볼륨: --", font=("맑은 고딕", 20, "bold"), bg="#1c1c1c", fg="#ffffff")
+        self.label = tk.Label(self.root, text="볼륨: --", font=("Pretendard SemiBold", 20), bg="#1c1c1c", fg="#ffffff")
         self.label.pack(expand=True, fill="both")
 
         self.hide_timer = None
